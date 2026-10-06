@@ -44,7 +44,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#f8fcfe
 .progress{height:9px;background:#d4e5eb;border-radius:8px;overflow:hidden;margin:10px 0}.progress i{display:block;height:100%;background:var(--gold)}
 .book-actions{display:flex;gap:7px;margin-top:12px}.book-actions button{flex:1}
 .empty{text-align:center;padding:45px;color:var(--muted)}
-.form{display:grid;grid-template-columns:1fr 1fr;gap:13px}.full{grid-column:1/-1}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:19px 20px}.full{grid-column:1/-1}
 label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
 .hero{background:linear-gradient(135deg,#f7fcfe,#dceff5);border:1px solid var(--line);padding:22px}
 .warning{border:1px solid #c59a55;background:#edf8fc;padding:16px;margin-top:12px;display:none}
@@ -63,6 +63,10 @@ label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
 @media(max-width:600px){.controls input,.controls select{min-width:0;flex-basis:100%}}@media(max-width:600px){.auth-bar{align-items:flex-start}.auth-actions{width:auto}.auth-actions button{padding:7px 10px}}
 @media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.book-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.app{padding:10px}header h1{font-size:clamp(22px,7vw,30px);letter-spacing:-0.095em}header{padding:23px 10px 25px}header{padding:22px 14px}.book-grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}.full{grid-column:auto}.card{padding:14px}.stats{gap:9px}.stat strong{font-size:25px}}
+
+    .required-label{color:#b23a48;font-size:12px;font-weight:700;margin-left:4px;}
+    .form-note{margin:6px 0 0;color:#777;font-size:12px;}
+    .form-guide{margin:2px 0 20px;padding:4px 2px;line-height:1.9;font-size:14px;color:var(--muted);}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -149,8 +153,9 @@ label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
 <section id="add" class="view">
   <div class="card">
     <div class="section-title"><h2 id="formTitle">📖 웹툰 등록</h2></div>
+    <div class="form-guide">💡 해당하는 사항이 없으면 칸을 비워둬도 등록 가능합니다.</div>
     <div class="form">
-      <div><label>작품명 *</label><input id="title" placeholder="예: 나 혼자만 레벨업"></div>
+      <div><label>작품명 <span class="required-label">필수입력*</span></label><input id="title" placeholder="예: 나 혼자만 레벨업"></div>
       <div><label>글작가</label><input id="writer" placeholder="글작가명"></div>
       <div><label>그림작가</label><input id="artist" placeholder="그림작가명"></div>
       <div><label>총 화수</label><input id="total" type="number" min="0" placeholder="예: 179"></div>
@@ -273,7 +278,7 @@ async function uploadBook(book){
  const work={user_id:currentUser.id,title:book.title,writer:book.writer||book.author||'',artist:book.artist||'',total_episodes:+book.total||0,series_status:book.seriesStatus||'serializing',series_start_date:book.seriesStartDate||null,genre:book.genre||null,reading_status:book.status||'unread',read_episodes:+book.read||0,memo:book.memo||''};
  const {data,error}=await supabaseClient.from('webtoon_works').insert(work).select().single();if(error)throw error;
  for(const p of (book.purchases||[])){
-  const {error:pe}=await supabaseClient.from('webtoon_purchases').insert({work_id:data.id,user_id:currentUser.id,platform:p.platform||'기타',price:+p.price||0,purchase_date:p.date||new Date().toISOString().slice(0,10)});
+  const {error:pe}=await supabaseClient.from('webtoon_purchases').insert({work_id:data.id,user_id:currentUser.id,platform:p.platform||'기타',price:+p.price||0,purchase_date:p.date||null});
   if(pe)throw pe;
  }
  return data;
@@ -281,10 +286,10 @@ async function uploadBook(book){
 async function updateCloudBook(book){
  const {error}=await supabaseClient.from('webtoon_works').update({title:book.title,writer:book.writer||book.author||'',artist:book.artist||'',total_episodes:+book.total||0,series_status:book.seriesStatus||'serializing',series_start_date:book.seriesStartDate||null,genre:book.genre||null,reading_status:book.status||'unread',read_episodes:+book.read||0,memo:book.memo||''}).eq('id',book.id);if(error)throw error;
  // The current UI edits the first purchase; keep the rest intact.
- if(book.purchases?.[0]){const p=book.purchases[0];const {error:pe}=await supabaseClient.from('webtoon_purchases').update({platform:p.platform||'기타',price:+p.price||0,purchase_date:p.date||new Date().toISOString().slice(0,10)}).eq('id',p.id).eq('work_id',book.id);if(pe)throw pe;}
+ if(book.purchases?.[0]){const p=book.purchases[0];const {error:pe}=await supabaseClient.from('webtoon_purchases').update({platform:p.platform||'기타',price:+p.price||0,purchase_date:p.date||null}).eq('id',p.id).eq('work_id',book.id);if(pe)throw pe;}
 }
 async function deleteCloudBook(id){const {error}=await supabaseClient.from('webtoon_works').delete().eq('id',id);if(error)throw error}
-async function addPurchase(workId,p){const {data,error}=await supabaseClient.from('webtoon_purchases').insert({work_id:workId,user_id:currentUser.id,platform:p.platform||'기타',price:+p.price||0,purchase_date:p.date||new Date().toISOString().slice(0,10)}).select().single();if(error)throw error;return data}
+async function addPurchase(workId,p){const {data,error}=await supabaseClient.from('webtoon_purchases').insert({work_id:workId,user_id:currentUser.id,platform:p.platform||'기타',price:+p.price||0,purchase_date:p.date||null}).select().single();if(error)throw error;return data}
 async function savePreferences(){if(!currentUser)return;const payload={user_id:currentUser.id,reading_filter:$('statusFilter').value,series_filter:$('seriesFilter').value,sort_by:sortToDb[$('sort').value]||'created_desc'};const {error}=await supabaseClient.from('webtoon_preferences').upsert(payload,{onConflict:'user_id'});if(error)console.warn(error)}
 async function loadPreferences(){const {data,error}=await supabaseClient.from('webtoon_preferences').select('*').eq('user_id',currentUser.id).maybeSingle();if(error){console.warn(error);return}if(!data)return;$('statusFilter').value=data.reading_filter||'all';$('seriesFilter').value=data.series_filter||'all';$('sort').value=sortFromDb[data.sort_by]||'recent'}
 async function migrateLocalIfNeeded(){
@@ -310,7 +315,7 @@ function checkDuplicate(){
 }
 async function saveBook(){
  const title=$('title').value.trim();if(!title){alert('작품명을 입력해주세요.');return}
- const data={title,author:$('writer').value.trim(),writer:$('writer').value.trim(),artist:$('artist').value.trim(),genre:$('genre').value,total:+$('total').value||0,seriesStatus:$('seriesStatus').value,seriesStartDate:$('seriesStartDate').value||'',read:Math.max(0,+$('read').value||0),status:$('status').value,memo:$('memo').value.trim(),purchases:[{platform:$('platform').value,price:+$('price').value||0,date:$('buyDate').value||new Date().toISOString().slice(0,10)}]};
+ const data={title,author:$('writer').value.trim(),writer:$('writer').value.trim(),artist:$('artist').value.trim(),genre:$('genre').value,total:+$('total').value||0,seriesStatus:$('seriesStatus').value,seriesStartDate:$('seriesStartDate').value||'',read:Math.max(0,+$('read').value||0),status:$('status').value,memo:$('memo').value.trim(),purchases:[{platform:$('platform').value,price:+$('price').value||0,date:$('buyDate').value||''}]};
  if(data.total&&data.read>=data.total)data.status='done';
  const found=books.find(b=>b.title.toLowerCase()===title.toLowerCase()&&b.id!==editingId);
  try{
@@ -325,7 +330,7 @@ async function saveBook(){
  }catch(e){alert('저장하지 못했습니다.\n'+(e.message||e));}
 }
 function closeModal(){$('modal').classList.remove('show');pendingBook=null}
-function resetForm(){editingId=null;$('formTitle').textContent='📖 웹툰 등록';$('saveBtn').textContent='빛과 소금에 기록하기';['title','writer','artist','total','memo','seriesStartDate'].forEach(id=>$(id).value='');$('read').value=0;$('seriesStatus').value='serializing';$('platform').value='리디북스';$('price').value=0;$('status').value='unread';$('buyDate').value=new Date().toISOString().slice(0,10);$('warning').classList.remove('show')}
+function resetForm(){editingId=null;$('formTitle').textContent='📖 웹툰 등록';$('saveBtn').textContent='빛과 소금에 기록하기';['title','writer','artist','total','memo','seriesStartDate'].forEach(id=>$(id).value='');$('read').value=0;$('seriesStatus').value='serializing';$('platform').value='리디북스';$('price').value=0;$('status').value='unread';$('buyDate').value='';$('warning').classList.remove('show')}
 function editBook(id){const b=books.find(x=>x.id===id);if(!b)return;editingId=id;showView('add');$('formTitle').textContent='✎ 웹툰 수정';$('saveBtn').textContent='기록 수정하기';$('title').value=b.title;$('writer').value=b.writer||b.author||'';$('artist').value=b.artist||'';$('total').value=b.total;$('genre').value=b.genre||'';$('seriesStatus').value=b.seriesStatus||'serializing';$('seriesStartDate').value=b.seriesStartDate||'';$('read').value=b.read;$('status').value=b.status;$('memo').value=b.memo;const p=b.purchases[0]||{};$('platform').value=p.platform||'기타';$('price').value=p.price||0;$('buyDate').value=p.date||'';checkDuplicate()}
 async function deleteBook(id){if(!confirm('이 작품을 서재에서 삭제할까요?'))return;try{await deleteCloudBook(id);books=books.filter(b=>b.id!==id);renderBooks()}catch(e){alert('삭제하지 못했습니다.\n'+e.message)}}
 async function updateRead(id){const b=books.find(x=>x.id===id);const n=prompt('현재 읽은 화수를 입력하세요.',b.read);if(n===null)return;b.read=Math.max(0,+n||0);if(b.total&&b.read>=b.total)b.status='done';else if(b.read>0&&b.status==='unread')b.status='reading';try{await updateCloudBook(b);renderBooks()}catch(e){alert('읽은 화수를 저장하지 못했습니다.\n'+e.message)}}
