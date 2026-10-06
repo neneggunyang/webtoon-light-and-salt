@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>웹툰 업계의 빛과 소금</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --paper:#eef7fb;--paper2:#f8fcfe;--ink:#29414c;--brown:#47798c;
+  --gold:#6c9fb1;--line:#c4dce5;--muted:#68808a;--danger:#9a5960;
+  --green:#596d4b;--shadow:0 10px 30px rgba(70,45,25,.10)
+}
+body{margin:0;background:#dcecf2;color:var(--ink);font-family:"Noto Serif KR","Nanum Myeongjo",Georgia,serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:1180px;margin:auto;padding:22px}
+header{position:relative;background:linear-gradient(145deg,#f5fbfe 0%,#e5f3f8 100%);border:1px solid var(--line);box-shadow:var(--shadow);padding:25px 30px 27px;margin-bottom:18px;text-align:center;overflow:hidden}
+header:before,header:after{content:"";position:absolute;left:7%;right:7%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+header:before{top:13px}header:after{bottom:13px}
+header h1:after{content:"✦  ✦  ✦";display:block;color:var(--gold);font-size:.38em;letter-spacing:.32em;margin-top:7px;opacity:.8}header .subtitle:before{content:"🕯️  ";color:var(--gold)}header .subtitle:after{content:"  🧂";color:var(--gold)}
+.eyebrow{letter-spacing:.18em;color:var(--gold);font-size:12px}
+h1{margin:8px 0 6px;font-size:clamp(24px,5.5vw,38px);font-weight:900;letter-spacing:-0.085em;word-spacing:-0.12em;white-space:nowrap;line-height:1.15;text-shadow:0 1px 0 rgba(255,255,255,.65)}
+.subtitle{color:var(--muted);font-size:14px;letter-spacing:-0.02em}
+nav{display:flex;gap:8px;overflow:auto;padding-bottom:3px;margin-bottom:18px}
+nav button{white-space:nowrap;border:1px solid var(--line);background:var(--paper2);color:var(--ink);padding:11px 16px;border-radius:5px}
+nav button.active{background:var(--brown);color:#f7fcff;border-color:var(--brown)}
+.view{display:none}.view.active{display:block}
+.grid{display:grid;gap:14px}
+.stats{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow);padding:18px}
+.stat strong{display:block;font-size:30px;margin:5px 0}.label{font-size:13px;color:var(--muted)}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:22px 0 10px}
+h2,h3{margin:0}
+.btn{border:1px solid var(--brown);background:var(--brown);color:#fff7e8;padding:9px 14px;border-radius:4px}
+.btn.alt{background:transparent;color:var(--brown)}
+.btn.danger{background:var(--danger);border-color:var(--danger)}
+.controls{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:15px}
+input,select,textarea{width:100%;border:1px solid var(--line);background:#f8fcfe;color:var(--ink);padding:10px;border-radius:4px}
+.controls input{flex:1 1 220px;min-width:200px}.controls select{flex:1 1 170px;min-width:145px;width:auto}.filter-hint{font-size:12px;color:var(--muted);margin:-5px 0 14px;padding-left:2px}
+.book-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.book-title{font-size:17px;font-weight:800;line-height:1.3;margin-bottom:5px;word-break:keep-all}.author{color:var(--muted);font-size:13px}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}.badge{font-size:12px;padding:4px 7px;border-radius:12px;background:#dbeaf0}
+.progress{height:9px;background:#d4e5eb;border-radius:8px;overflow:hidden;margin:10px 0}.progress i{display:block;height:100%;background:var(--gold)}
+.book-actions{display:flex;gap:7px;margin-top:12px}.book-actions button{flex:1}
+.empty{text-align:center;padding:45px;color:var(--muted)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:13px}.full{grid-column:1/-1}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
+.hero{background:linear-gradient(135deg,#f7fcfe,#dceff5);border:1px solid var(--line);padding:22px}
+.warning{border:1px solid #c59a55;background:#edf8fc;padding:16px;margin-top:12px;display:none}
+.warning.show{display:block}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse}.table th,.table td{border-bottom:1px solid var(--line);padding:10px;text-align:left;white-space:nowrap}
+.bar{height:15px;background:#d5e6ec;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--brown)}
+.modal{position:fixed;inset:0;background:rgba(35,24,16,.58);display:none;align-items:center;justify-content:center;padding:18px;z-index:5}.modal.show{display:flex}
+.modal-box{max-width:560px;width:100%;background:var(--paper);border:1px solid var(--gold);padding:24px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.note{font-size:12px;color:var(--muted);line-height:1.6}
+
+.auth-gate{position:fixed;inset:0;background:rgba(220,236,242,.97);z-index:20;display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
+.auth-box{width:min(460px,100%);background:var(--paper);border:1px solid var(--gold);box-shadow:0 20px 50px rgba(35,60,70,.2);padding:28px}
+.auth-box h2{margin:0 0 7px}.auth-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px}.auth-form{display:grid;gap:12px}.auth-form label{margin-bottom:4px}.auth-form input{background:#fff}.auth-actions{display:flex;gap:8px;margin-top:14px}.auth-actions button{flex:1}.auth-message{display:none;margin-top:13px;padding:11px;border:1px solid var(--line);background:#f8fcfe;font-size:13px;line-height:1.55}.auth-message.show{display:block}.account-bar{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:-7px 0 12px;font-size:12px;color:var(--muted)}.account-email{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.btn.small{padding:6px 10px;font-size:12px}
+
+@media(max-width:600px){.controls input,.controls select{min-width:0;flex-basis:100%}}
+@media(max-width:850px){.stats{grid-template-columns:repeat(2,1fr)}.book-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.app{padding:10px}header h1{font-size:clamp(22px,7vw,30px);letter-spacing:-0.095em}header{padding:23px 10px 25px}header{padding:22px 14px}.book-grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}.full{grid-column:auto}.card{padding:14px}.stats{gap:9px}.stat strong{font-size:25px}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="auth-gate" id="authGate">
+  <div class="auth-box">
+    <div class="eyebrow">WEBTOON LIBRARY</div>
+    <h2>🕯️ 웹툰 업계의 빛과 소금 🧂</h2>
+    <p class="auth-sub">내 웹툰 서재를 안전하게 저장하고, PC와 휴대폰에서 이어서 볼 수 있어요.</p>
+    <div class="auth-form">
+      <div><label for="authEmail">이메일</label><input id="authEmail" type="email" autocomplete="email" placeholder="이메일을 입력하세요"></div>
+      <div><label for="authPassword">비밀번호</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="6자 이상"></div>
+    </div>
+    <div class="auth-actions">
+      <button class="btn alt" id="signupBtn">회원가입</button>
+      <button class="btn" id="loginBtn">로그인</button>
+    </div>
+    <div class="auth-message" id="authMessage"></div>
+    <p class="note" style="margin-top:14px">회원가입 후 확인 메일이 오면 이메일 인증을 완료해주세요.</p>
+  </div>
+</div>
+
+<div class="app">
+<header>
+  <h1><span aria-hidden="true">🕯️</span> 웹툰 업계의 빛과 소금 <span aria-hidden="true">🧂</span></h1>
+  <div class="subtitle">당신의 지갑과 서재를 지켜드립니다.</div>
+</header>
+<div class="account-bar"><span class="account-email" id="accountEmail"></span><button class="btn alt small" id="logoutBtn">로그아웃</button></div>
+
+<nav id="nav">
+  <button class="active" data-view="home">서재</button>
+  <button data-view="add">웹툰 등록</button>
+  <button data-view="stats">통계</button>
+  <button data-view="random">🎲 오늘 뭐 읽지?</button>
+</nav>
+
+<section id="home" class="view active">
+  <div class="grid stats" id="statsTop"></div>
+  <div class="section-title"><h2>🗯️ 나의 웹툰 서재</h2><button class="btn" onclick="showView('add')">＋ 웹툰 추가</button></div>
+  <div class="controls">
+    <input id="search" placeholder="작품명이나 작가로 검색">
+    <select id="statusFilter" aria-label="내 독서 상태 필터">
+      <option value="all">📚 내 상태 · 전체</option>
+      <option value="unread">📕 내 상태 · 안 읽음</option>
+      <option value="reading">📖 내 상태 · 읽는 중</option>
+      <option value="done">✅ 내 상태 · 완독</option>
+      <option value="paused">⏸️ 내 상태 · 중단</option>
+    </select>
+    <select id="seriesFilter" aria-label="작품 연재 상태 필터">
+      <option value="all">🏁 작품 상태 · 전체</option>
+      <option value="completed">🏁 완결작만</option>
+      <option value="serializing">🔥 연재작만</option>
+      <option value="hiatus">⏸️ 연재중단만</option>
+    </select>
+    <select id="sort" aria-label="서재 정렬">
+      <option value="recent">🆕 최근 등록순</option>
+      <option value="titleAsc">🔤 제목순</option>
+      <option value="readingFirst">📖 읽는 중 우선</option>
+      <option value="unreadFirst">💤 안 읽음 우선</option>
+      <option value="doneFirst">✅ 완독 우선</option>
+      <option value="priceDesc">💰 구매금액 높은순</option>
+      <option value="priceAsc">💸 구매금액 낮은순</option>
+      <option value="dateDesc">📅 구매일 최신순</option>
+      <option value="dateAsc">📅 구매일 오래된순</option>
+      <option value="readDesc">📚 읽은 화수 많은순</option>
+      <option value="readAsc">📚 읽은 화수 적은순</option>
+    </select>
+  </div>
+  <div class="filter-hint" id="filterHint">전체 작품 · 최근 등록순</div>
+  <div class="book-grid" id="bookGrid"></div>
+</section>
+
+<section id="add" class="view">
+  <div class="card">
+    <div class="section-title"><h2 id="formTitle">📖 웹툰 등록</h2></div>
+    <div class="form">
+      <div><label>작품명 *</label><input id="title" placeholder="예: 나 혼자만 레벨업"></div>
+      <div><label>글작가</label><input id="writer" placeholder="글작가명"></div>
+      <div><label>그림작가</label><input id="artist" placeholder="그림작가명"></div>
+      <div><label>총 화수</label><input id="total" type="number" min="0" placeholder="예: 179"></div>
+      <div><label>작품 연재 상태</label><select id="seriesStatus"><option value="serializing">연재</option><option value="completed">완결</option><option value="hiatus">연재중단</option></select></div>
+      <div><label>현재 읽은 화수</label><input id="read" type="number" min="0" value="0"></div>
+      <div><label>플랫폼</label><select id="platform"><option>카카오페이지</option><option>네이버시리즈</option><option>리디</option><option>레진코믹스</option><option>봄툰</option><option>미스터블루</option><option>기타</option></select></div>
+      <div><label>구매 금액</label><input id="price" type="number" min="0" value="0"></div>
+      <div><label>구매일</label><input id="buyDate" type="date"></div>
+      <div><label>상태</label><select id="status"><option value="unread">안 읽음</option><option value="reading">읽는 중</option><option value="done">완독</option><option value="paused">중단</option></select></div>
+      <div class="full"><label>메모</label><textarea id="memo" rows="3" placeholder="읽고 싶은 이유, 감상, 다음에 읽을 때 참고할 것 등"></textarea></div>
+    </div>
+    <div id="warning" class="warning"></div>
+    <div style="margin-top:15px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn alt" onclick="resetForm();showView('home')">취소</button>
+      <button class="btn" id="saveBtn" onclick="saveBook()">빛과 소금에 기록하기</button>
+    </div>
+    <p class="note">작품명은 기존 서재와 비교하여 중복 구매 가능성을 알려줍니다. 같은 작품을 다른 플랫폼에서 구매한 경우 하나의 작품에 구매처를 추가할 수 있습니다.</p>
+  </div>
+</section>
+
+<section id="stats" class="view">
+  <div class="section-title"><h2>📊 빛과 소금의 통계</h2></div>
+  <div class="grid stats" id="statsDetail"></div>
+  <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:14px">
+    <div class="card"><h3>플랫폼별 보유</h3><div id="platformStats"></div></div>
+    <div class="card"><h3>상태별 보유</h3><div id="statusStats"></div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>🔄 중복 보유 작품</h3><div id="duplicateList"></div></div>
+</section>
+
+<section id="random" class="view">
+  <div class="hero">
+    <div class="eyebrow">TODAY'S READING</div>
+    <h2 style="margin:7px 0">🎲 오늘 뭐 읽지?</h2>
+    <p>묵혀둔 작품을 하나 꺼내드립니다.</p>
+    <button class="btn" onclick="pickRandom()">오늘의 웹툰 뽑기</button>
+  </div>
+  <div id="randomResult" style="margin-top:14px"></div>
+</section>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div id="modalContent"></div>
+    <div class="modal-actions"><button class="btn alt" onclick="closeModal()">돌아가기</button><button class="btn danger" id="modalConfirm">그래도 기록하기</button></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://tybyojivzvgpmdnfccij.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_u235rMk__ejhXL5BQRcCAw_gLg9qFni';
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const KEY='webtoon-light-salt-v1';
+let books=[];
+let editingId=null,pendingBook=null,currentUser=null;
+const $=id=>document.getElementById(id);
+const won=n=>'₩'+Number(n||0).toLocaleString('ko-KR');
+const labels={unread:'안 읽음',reading:'읽는 중',done:'완독',paused:'중단'};
+const seriesLabels={serializing:'연재',completed:'완결',hiatus:'연재중단'};
+const sortToDb={recent:'created_desc',titleAsc:'title_asc',readingFirst:'reading_priority',unreadFirst:'unread_priority',doneFirst:'done_priority',priceDesc:'price_desc',priceAsc:'price_asc',dateDesc:'purchase_date_desc',dateAsc:'purchase_date_asc',readDesc:'read_episodes_desc',readAsc:'read_episodes_asc'};
+const sortFromDb=Object.fromEntries(Object.entries(sortToDb).map(([a,b])=>[b,a]));
+function localBooks(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}}
+function saveLocal(){localStorage.setItem(KEY,JSON.stringify(books))}
+function clearLocal(){localStorage.removeItem(KEY)}
+function showAuthMessage(msg,ok=false){$('authMessage').innerHTML=msg;$('authMessage').classList.add('show');$('authMessage').style.borderColor=ok?'#8eaa82':'var(--line)'}
+function setAuthBusy(b){$('loginBtn').disabled=b;$('signupBtn').disabled=b;$('loginBtn').textContent=b?'처리 중…':'로그인';$('signupBtn').textContent=b?'처리 중…':'회원가입'}
+function showApp(user){currentUser=user;$('authGate').style.display='none';$('accountEmail').textContent='👤 '+(user.email||'로그인됨');}
+function showGate(){currentUser=null;$('authGate').style.display='flex';$('accountEmail').textContent=''}
+async function signUp(){
+ const email=$('authEmail').value.trim(),password=$('authPassword').value;
+ if(!email||!password){showAuthMessage('이메일과 비밀번호를 입력해주세요.');return}
+ if(password.length<6){showAuthMessage('비밀번호는 6자 이상이어야 해요.');return}
+ setAuthBusy(true);
+ const {data,error}=await supabaseClient.auth.signUp({email,password,emailRedirectTo:window.location.href});
+ setAuthBusy(false);
+ if(error){showAuthMessage(esc(error.message));return}
+ if(data.session){showApp(data.user);await initializeCloud();}
+ else showAuthMessage('가입 완료! 📬 확인 메일을 열어 이메일 인증을 완료한 뒤 로그인해주세요.',true);
+}
+async function signIn(){
+ const email=$('authEmail').value.trim(),password=$('authPassword').value;
+ if(!email||!password){showAuthMessage('이메일과 비밀번호를 입력해주세요.');return}
+ setAuthBusy(true);
+ const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+ setAuthBusy(false);
+ if(error){showAuthMessage(esc(error.message));return}
+ showApp(data.user);await initializeCloud();
+}
+async function signOut(){await supabaseClient.auth.signOut();books=[];showGate();}
+$('signupBtn').onclick=signUp;$('loginBtn').onclick=signIn;$('logoutBtn').onclick=signOut;
+$('authPassword').addEventListener('keydown',e=>{if(e.key==='Enter')signIn()});
+
+function showView(id){
+ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(id).classList.add('active');
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+ if(id==='home')renderBooks();if(id==='stats')renderStats();if(id==='random')$('randomResult').innerHTML='';
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+$('search').oninput=renderBooks;$('statusFilter').onchange=()=>{savePreferences();renderBooks()};$('seriesFilter').onchange=()=>{savePreferences();renderBooks()};$('sort').onchange=()=>{savePreferences();renderBooks()};
+$('title').oninput=checkDuplicate;$('platform').onchange=checkDuplicate;
+
+function dbToBook(w,purchases){return {id:w.id,title:w.title,author:w.writer||'',writer:w.writer||'',artist:w.artist||'',total:w.total_episodes||0,seriesStatus:w.series_status||'serializing',read:w.read_episodes||0,status:w.reading_status||'unread',memo:w.memo||'',purchases:(purchases||[]).map(p=>({id:p.id,platform:p.platform,price:+p.price||0,date:p.purchase_date||''}))}}
+async function fetchCloud(){
+ const {data:works,error:e1}=await supabaseClient.from('webtoon_works').select('*').order('created_at',{ascending:false});
+ if(e1)throw e1;
+ if(!works?.length){books=[];return}
+ const ids=works.map(w=>w.id);
+ const {data:purchases,error:e2}=await supabaseClient.from('webtoon_purchases').select('*').in('work_id',ids).order('purchase_date',{ascending:false});
+ if(e2)throw e2;
+ const grouped={};(purchases||[]).forEach(p=>(grouped[p.work_id]??=[]).push(p));
+ books=works.map(w=>dbToBook(w,grouped[w.id]||[]));
+}
+async function uploadBook(book){
+ const work={user_id:currentUser.id,title:book.title,writer:book.writer||book.author||'',artist:book.artist||'',total_episodes:+book.total||0,series_status:book.seriesStatus||'serializing',reading_status:book.status||'unread',read_episodes:+book.read||0,memo:book.memo||''};
+ const {data,error}=await supabaseClient.from('webtoon_works').insert(work).select().single();if(error)throw error;
+ for(const p of (book.purchases||[])){
+  const {error:pe}=await supabaseClient.from('webtoon_purchases').insert({work_id:data.id,user_id:currentUser.id,platform:p.platform||'기타',price:+p.price||0,purchase_date:p.date||new Date().toISOString().slice(0,10)});
+  if(pe)throw pe;
+ }
+ return data;
+}
+async function updateCloudBook(book){
+ const {error}=await supabaseClient.from('webtoon_works').update({title:book.title,writer:book.writer||book.author||'',artist:book.artist||'',total_episodes:+book.total||0,series_status:book.seriesStatus||'serializing',reading_status:book.status||'unread',read_episodes:+book.read||0,memo:book.memo||''}).eq('id',book.id);if(error)throw error;
+ // The current UI edits the first purchase; keep the rest intact.
+ if(book.purchases?.[0]){const p=book.purchases[0];const {error:pe}=await supabaseClient.from('webtoon_purchases').update({platform:p.platform||'기타',price:+p.price||0,purchase_date:p.date||new Date().toISOString().slice(0,10)}).eq('id',p.id).eq('work_id',book.id);if(pe)throw pe;}
+}
+async function deleteCloudBook(id){const {error}=await supabaseClient.from('webtoon_works').delete().eq('id',id);if(error)throw error}
+async function addPurchase(workId,p){const {data,error}=await supabaseClient.from('webtoon_purchases').insert({work_id:workId,user_id:currentUser.id,platform:p.platform||'기타',price:+p.price||0,purchase_date:p.date||new Date().toISOString().slice(0,10)}).select().single();if(error)throw error;return data}
+async function savePreferences(){if(!currentUser)return;const payload={user_id:currentUser.id,reading_filter:$('statusFilter').value,series_filter:$('seriesFilter').value,sort_by:sortToDb[$('sort').value]||'created_desc'};const {error}=await supabaseClient.from('webtoon_preferences').upsert(payload,{onConflict:'user_id'});if(error)console.warn(error)}
+async function loadPreferences(){const {data,error}=await supabaseClient.from('webtoon_preferences').select('*').eq('user_id',currentUser.id).maybeSingle();if(error){console.warn(error);return}if(!data)return;$('statusFilter').value=data.reading_filter||'all';$('seriesFilter').value=data.series_filter||'all';$('sort').value=sortFromDb[data.sort_by]||'recent'}
+async function migrateLocalIfNeeded(){
+ const old=localBooks();if(!old.length||books.length)return false;
+ const yes=confirm(`이 기기에 저장된 기존 웹툰 ${old.length}개가 있어요. ☁️\n\n현재 계정의 서재로 올릴까요?\n\n확인 = 클라우드에 옮기기\n취소 = 기존 데이터는 그대로 두고 시작하기`);
+ if(!yes)return false;
+ let count=0;
+ for(const b of old){try{await uploadBook(b);count++}catch(e){console.error(e);alert(`「${b.title}」을(를) 옮기는 중 오류가 발생했습니다.\n${e.message}`);break}}
+ await fetchCloud();clearLocal();
+ if(count)alert(`☁️ 기존 웹툰 ${count}개를 클라우드 서재로 옮겼어요!`);
+ return true;
+}
+async function initializeCloud(){
+ try{await fetchCloud();await migrateLocalIfNeeded();await loadPreferences();renderBooks();}
+ catch(e){console.error(e);alert('클라우드 서재를 불러오지 못했습니다.\n잠시 후 다시 로그인해 주세요.\n\n'+(e.message||e));}
+}
+supabaseClient.auth.getSession().then(async ({data})=>{if(data.session){showApp(data.session.user);await initializeCloud()}else showGate()});
+supabaseClient.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT')showGate()});
+
+function checkDuplicate(){
+ const t=$('title').value.trim().toLowerCase();const found=books.filter(b=>b.title.toLowerCase()===t&&b.id!==editingId);
+ if(found.length){const same=found[0];$('warning').classList.add('show');$('warning').innerHTML=`<strong>🕯️ 빛과 소금의 경고</strong><br>「${esc(same.title)}」은(는) 이미 서재에 있습니다.<br><br>현재 보유 플랫폼: <b>${same.purchases.map(p=>esc(p.platform)).join(' · ')}</b><br><br>새 플랫폼을 추가하려는 것이라면 아래 저장 버튼으로 계속할 수 있습니다. 기록은 하나의 작품으로 합쳐집니다.`}else $('warning').classList.remove('show');
+}
+async function saveBook(){
+ const title=$('title').value.trim();if(!title){alert('작품명을 입력해주세요.');return}
+ const data={title,author:$('writer').value.trim(),writer:$('writer').value.trim(),artist:$('artist').value.trim(),total:+$('total').value||0,seriesStatus:$('seriesStatus').value,read:Math.max(0,+$('read').value||0),status:$('status').value,memo:$('memo').value.trim(),purchases:[{platform:$('platform').value,price:+$('price').value||0,date:$('buyDate').value||new Date().toISOString().slice(0,10)}]};
+ if(data.total&&data.read>=data.total)data.status='done';
+ const found=books.find(b=>b.title.toLowerCase()===title.toLowerCase()&&b.id!==editingId);
+ try{
+  if(found){
+   pendingBook=data;$('modalContent').innerHTML=`<h2>🕯️ 빛과 소금의 경고</h2><p>이미 <b>${esc(found.title)}</b>을(를) 보유하고 있습니다.</p><p>현재 구매처: <b>${found.purchases.map(p=>esc(p.platform)).join(' · ')}</b></p><p>이번 기록은 <b>${esc(data.purchases[0].platform)}</b> 구매를 추가합니다.</p><p>정말 같은 작품을 또 구매한 것이 맞다면 기록을 남겨둘 수 있습니다.</p>`;
+   $('modalConfirm').onclick=async()=>{try{const np=await addPurchase(found.id,data.purchases[0]);found.purchases.push({id:np.id,platform:np.platform,price:+np.price||0,date:np.purchase_date||''});if(data.writer&&!found.writer)found.writer=data.writer;if(data.artist&&!found.artist)found.artist=data.artist;if(data.total&&!found.total)found.total=data.total;await supabaseClient.from('webtoon_works').update({writer:found.writer,artist:found.artist,total_episodes:+found.total||0}).eq('id',found.id);closeModal();resetForm();showView('home')}catch(e){alert('구매처를 추가하지 못했습니다.\n'+e.message)}};
+   $('modal').classList.add('show');return;
+  }
+  if(editingId){const b=books.find(x=>x.id===editingId);Object.assign(b,data,{id:editingId,purchases:b.purchases});await updateCloudBook(b)}
+  else{await uploadBook(data);await fetchCloud()}
+  resetForm();showView('home');
+ }catch(e){alert('저장하지 못했습니다.\n'+(e.message||e));}
+}
+function closeModal(){$('modal').classList.remove('show');pendingBook=null}
+function resetForm(){editingId=null;$('formTitle').textContent='📖 웹툰 등록';$('saveBtn').textContent='빛과 소금에 기록하기';['title','writer','artist','total','memo'].forEach(id=>$(id).value='');$('read').value=0;$('seriesStatus').value='serializing';$('platform').value='카카오페이지';$('price').value=0;$('status').value='unread';$('buyDate').value=new Date().toISOString().slice(0,10);$('warning').classList.remove('show')}
+function editBook(id){const b=books.find(x=>x.id===id);if(!b)return;editingId=id;showView('add');$('formTitle').textContent='✎ 웹툰 수정';$('saveBtn').textContent='기록 수정하기';$('title').value=b.title;$('writer').value=b.writer||b.author||'';$('artist').value=b.artist||'';$('total').value=b.total;$('seriesStatus').value=b.seriesStatus||'serializing';$('read').value=b.read;$('status').value=b.status;$('memo').value=b.memo;const p=b.purchases[0]||{};$('platform').value=p.platform||'기타';$('price').value=p.price||0;$('buyDate').value=p.date||'';checkDuplicate()}
+async function deleteBook(id){if(!confirm('이 작품을 서재에서 삭제할까요?'))return;try{await deleteCloudBook(id);books=books.filter(b=>b.id!==id);renderBooks()}catch(e){alert('삭제하지 못했습니다.\n'+e.message)}}
+async function updateRead(id){const b=books.find(x=>x.id===id);const n=prompt('현재 읽은 화수를 입력하세요.',b.read);if(n===null)return;b.read=Math.max(0,+n||0);if(b.total&&b.read>=b.total)b.status='done';else if(b.read>0&&b.status==='unread')b.status='reading';try{await updateCloudBook(b);renderBooks()}catch(e){alert('읽은 화수를 저장하지 못했습니다.\n'+e.message)}}
+const statusRank={reading:0,unread:1,paused:2,done:3};
+function purchaseTotal(b){return b.purchases.reduce((s,p)=>s+(+p.price||0),0)}
+function latestPurchaseDate(b){return b.purchases.map(p=>p.date||'').filter(Boolean).sort().pop()||''}
+function getSortValue(b,key){switch(key){case 'readingFirst':return statusRank[b.status]??9;case 'unreadFirst':return b.status==='unread'?0:1;case 'doneFirst':return b.status==='done'?0:1;case 'priceDesc':return -purchaseTotal(b);case 'priceAsc':return purchaseTotal(b);case 'dateDesc':return latestPurchaseDate(b);case 'dateAsc':return latestPurchaseDate(b);case 'readDesc':return -(+b.read||0);case 'readAsc':return +b.read||0;default:return books.indexOf(b)}}
+function sortBooks(arr,key){return [...arr].sort((a,b)=>{if(key==='titleAsc')return(a.title||'').localeCompare(b.title||'','ko');if(key==='dateDesc')return latestPurchaseDate(b).localeCompare(latestPurchaseDate(a))||(b.title||'').localeCompare(a.title||'','ko');if(key==='dateAsc')return latestPurchaseDate(a).localeCompare(latestPurchaseDate(b))||(a.title||'').localeCompare(b.title||'','ko');const av=getSortValue(a,key),bv=getSortValue(b,key);if(av<bv)return-1;if(av>bv)return 1;return(a.title||'').localeCompare(b.title||'','ko')})}
+function renderBooks(){const q=$('search').value.toLowerCase().trim(),f=$('statusFilter').value,sf=$('seriesFilter').value,sort=$('sort').value;let arr=books.filter(b=>(!q||b.title.toLowerCase().includes(q)||(b.writer||b.author||'').toLowerCase().includes(q)||(b.artist||'').toLowerCase().includes(q))&&(f==='all'||b.status===f)&&(sf==='all'||(b.seriesStatus||'serializing')===sf));arr=sortBooks(arr,sort);$('statsTop').innerHTML=statCards();const statusText=f==='all'?'전체':labels[f],seriesText=sf==='all'?'전체':seriesLabels[sf]+'작',sortText=$('sort').selectedOptions[0].textContent.replace(/^\S+\s/,'');$('filterHint').textContent=`${seriesText} · ${statusText} · ${sortText} · ${arr.length}작품`;if(!arr.length){$('bookGrid').innerHTML='<div class="card empty" style="grid-column:1/-1">조건에 맞는 웹툰이 없습니다.<br>필터를 조금 풀어보세요. 🕯️</div>';return}$('bookGrid').innerHTML=arr.map(bookCard).join('')}
+function statCards(){const total=books.length,un=books.filter(b=>b.status==='unread').length,rd=books.filter(b=>b.status==='reading').length,dn=books.filter(b=>b.status==='done').length;return `<div class="card stat"><span class="label">총 작품</span><strong>${total}</strong><span class="label">서재에 기록됨</span></div><div class="card stat"><span class="label">미독</span><strong>${un}</strong><span class="label">아직 펼치지 않음</span></div><div class="card stat"><span class="label">읽는 중</span><strong>${rd}</strong><span class="label">진행 중</span></div><div class="card stat"><span class="label">완독</span><strong>${dn}</strong><span class="label">빛으로 인도함</span></div>`}
+function bookCard(b){const pct=b.total?Math.min(100,Math.round(b.read/b.total*100)):0;return `<div class="card"><div class="book-title">${esc(b.title)}</div><div class="author">${esc(b.writer||b.author||'글작가 미기록')}${b.artist?` · 그림 ${esc(b.artist)}`:''}</div><div class="badges"><span class="badge">${labels[b.status]}</span><span class="badge">작품 · ${seriesLabels[b.seriesStatus||'serializing']}</span>${b.purchases.map(p=>`<span class="badge">${esc(p.platform)}</span>`).join('')}</div>${b.total?`<div class="note">${b.read} / ${b.total}화 · ${pct}%</div><div class="progress"><i style="width:${pct}%"></i></div>`:`<div class="note">읽은 화수 기록 없음</div>`}<div class="note">구매금액 ${won(b.purchases.reduce((s,p)=>s+(+p.price||0),0))}${b.purchases.length>1?' · '+b.purchases.length+'곳 보유':''}</div><div class="book-actions"><button class="btn alt" onclick="updateRead('${b.id}')">읽은 화수</button><button class="btn alt" onclick="editBook('${b.id}')">수정</button><button class="btn danger" onclick="deleteBook('${b.id}')">삭제</button></div></div>`}
+function renderStats(){$('statsDetail').innerHTML=statCards()+`<div class="card stat"><span class="label">총 구매금액</span><strong>${won(totalSpent())}</strong><span class="label">모든 플랫폼</span></div>`;const ps={};books.forEach(b=>b.purchases.forEach(p=>ps[p.platform]=(ps[p.platform]||0)+1));const max=Math.max(1,...Object.values(ps));$('platformStats').innerHTML=Object.entries(ps).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div style="margin:13px 0"><div style="display:flex;justify-content:space-between"><span>${esc(k)}</span><b>${v}</b></div><div class="bar"><i style="width:${v/max*100}%"></i></div></div>`).join('')||'<p class="note">아직 데이터가 없습니다.</p>';const ss={};books.forEach(b=>ss[labels[b.status]]=(ss[labels[b.status]]||0)+1);$('statusStats').innerHTML=Object.entries(ss).map(([k,v])=>`<div style="padding:9px 0;border-bottom:1px solid var(--line)">${k}<b style="float:right">${v}</b></div>`).join('')||'<p class="note">아직 데이터가 없습니다.</p>';const dup=books.filter(b=>b.purchases.length>1);$('duplicateList').innerHTML=dup.length?`<div class="table-wrap"><table class="table"><tr><th>작품</th><th>구매처</th><th>구매금액</th></tr>${dup.map(b=>`<tr><td>${esc(b.title)}</td><td>${b.purchases.map(p=>esc(p.platform)).join(' · ')}</td><td>${won(b.purchases.reduce((s,p)=>s+(+p.price||0),0))}</td></tr>`).join('')}</table></div>`:'<p class="empty">중복 보유 작품이 없습니다. 빛과 소금의 뜻을 잘 따르고 계십니다. 🕯️</p>'}
+function totalSpent(){return books.reduce((s,b)=>s+b.purchases.reduce((a,p)=>a+(+p.price||0),0),0)}
+function pickRandom(){const pool=books.filter(b=>b.status!=='done');if(!pool.length){$('randomResult').innerHTML='<div class="card empty">추천할 미완독 작품이 없습니다. 모든 작품을 완독하셨군요. ✨</div>';return}const b=pool[Math.floor(Math.random()*pool.length)],pct=b.total?Math.round(b.read/b.total*100):0;$('randomResult').innerHTML=`<div class="card" style="text-align:center;padding:30px"><div class="eyebrow">TODAY'S PICK</div><h2 style="margin:10px">${esc(b.title)}</h2><p>${esc(b.author||'작가 미기록')} · ${labels[b.status]}</p>${b.total?`<div class="progress" style="max-width:500px;margin:20px auto"><i style="width:${pct}%"></i></div><p>${b.read}/${b.total}화 (${pct}%)</p>`:''}<button class="btn" onclick="editBook('${b.id}')">이 작품 기록하기</button></div>`}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+resetForm();
+</script>
+</body>
+</html>
